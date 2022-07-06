@@ -170,10 +170,13 @@ static char putenvBufG[256];
 
 // util ----------------------------------------------------------------------
 
+extern int s3_port;
 static void S3_init()
 {
     S3Status status;
     const char *hostname = getenv("S3_HOSTNAME");
+
+    s3_port = atol(getenv("S3_PORT"));
 
     if ((status = S3_initialize("s3", verifyPeerG|S3_INIT_ALL, hostname))
         != S3StatusOK) {

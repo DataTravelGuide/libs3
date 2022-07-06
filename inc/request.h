@@ -38,6 +38,8 @@
 #include "response_headers_handler.h"
 #include "util.h"
 
+extern int s3_port;
+
 // Describes a type of HTTP request (these are our supported HTTP "verbs")
 typedef enum
 {

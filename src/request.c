@@ -67,6 +67,8 @@ static int requestStackCountG;
 
 char defaultHostNameG[S3_MAX_HOSTNAME_SIZE];
 
+int s3_port = 0;
+
 
 typedef struct RequestComputedValues
 {
@@ -1277,6 +1279,8 @@ static S3Status setup_curl(Request *request,
 
     // Set URI
     curl_easy_setopt_safe(CURLOPT_URL, request->uri);
+    if (s3_port)
+	    curl_easy_setopt_safe(CURLOPT_PORT, s3_port);
 
     // Set request type.
     switch (params->httpRequestType) {
