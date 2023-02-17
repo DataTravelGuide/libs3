@@ -180,19 +180,19 @@ install: exported
 	$(VERBOSE_SHOW) $(INSTALL) -Dps -m u+rwx,go+rx $(BUILD)/bin/s3 \
                     $(DESTDIR)/bin/s3
 	$(QUIET_ECHO) \
-        $(LIBDIR)/libs3.so.$(LIBS3_VER): Installing shared library
+        $(LIBDIR)/libs3-ubbd.so.$(LIBS3_VER): Installing shared library
 	$(VERBOSE_SHOW) $(INSTALL) -Dps -m u+rw,go+r \
-               $(BUILD)/lib/libs3.so.$(LIBS3_VER_MAJOR) \
-               $(LIBDIR)/libs3.so.$(LIBS3_VER)
+               $(BUILD)/lib/libs3-ubbd.so.$(LIBS3_VER_MAJOR) \
+               $(LIBDIR)/libs3-ubbd.so.$(LIBS3_VER)
 	$(QUIET_ECHO) \
-        $(LIBDIR)/libs3.so.$(LIBS3_VER_MAJOR): Linking shared library
-	$(VERBOSE_SHOW) ln -sf libs3.so.$(LIBS3_VER) \
-               $(LIBDIR)/libs3.so.$(LIBS3_VER_MAJOR)
-	$(QUIET_ECHO) $(LIBDIR)/libs3.so: Linking shared library
-	$(VERBOSE_SHOW) ln -sf libs3.so.$(LIBS3_VER_MAJOR) $(LIBDIR)/libs3.so
-	$(QUIET_ECHO) $(LIBDIR)/libs3.a: Installing static library
-	$(VERBOSE_SHOW) $(INSTALL) -Dp -m u+rw,go+r $(BUILD)/lib/libs3.a \
-                    $(LIBDIR)/libs3.a
+        $(LIBDIR)/libs3-ubbd.so.$(LIBS3_VER_MAJOR): Linking shared library
+	$(VERBOSE_SHOW) ln -sf libs3-ubbd.so.$(LIBS3_VER) \
+               $(LIBDIR)/libs3-ubbd.so.$(LIBS3_VER_MAJOR)
+	$(QUIET_ECHO) $(LIBDIR)/libs3-ubbd.so: Linking shared library
+	$(VERBOSE_SHOW) ln -sf libs3-ubbd.so.$(LIBS3_VER_MAJOR) $(LIBDIR)/libs3-ubbd.so
+	$(QUIET_ECHO) $(LIBDIR)/libs3-ubbd.a: Installing static library
+	$(VERBOSE_SHOW) $(INSTALL) -Dp -m u+rw,go+r $(BUILD)/lib/libs3-ubbd.a \
+                    $(LIBDIR)/libs3-ubbd.a
 	$(QUIET_ECHO) $(DESTDIR)/include/libs3.h: Installing header
 	$(VERBOSE_SHOW) $(INSTALL) -Dp -m u+rw,go+r $(BUILD)/include/libs3.h \
                     $(DESTDIR)/include/libs3.h
@@ -207,10 +207,10 @@ uninstall:
 	$(VERBOSE_SHOW) \
 	    rm -f $(DESTDIR)/bin/s3 \
               $(DESTDIR)/include/libs3.h \
-              $(DESTDIR)/lib/libs3.a \
-              $(DESTDIR)/lib/libs3.so \
-              $(DESTDIR)/lib/libs3.so.$(LIBS3_VER_MAJOR) \
-              $(DESTDIR)/lib/libs3.so.$(LIBS3_VER)
+              $(DESTDIR)/lib/libs3-ubbd.a \
+              $(DESTDIR)/lib/libs3-ubbd.so \
+              $(DESTDIR)/lib/libs3-ubbd.so.$(LIBS3_VER_MAJOR) \
+              $(DESTDIR)/lib/libs3-ubbd.so.$(LIBS3_VER)
 
 
 # --------------------------------------------------------------------------
@@ -236,8 +236,8 @@ $(BUILD)/obj/%.do: src/%.c
 # --------------------------------------------------------------------------
 # libs3 library targets
 
-LIBS3_SHARED = $(BUILD)/lib/libs3.so.$(LIBS3_VER_MAJOR)
-LIBS3_STATIC = $(BUILD)/lib/libs3.a
+LIBS3_SHARED = $(BUILD)/lib/libs3-ubbd.so.$(LIBS3_VER_MAJOR)
+LIBS3_STATIC = $(BUILD)/lib/libs3-ubbd.a
 
 .PHONY: libs3
 libs3: $(LIBS3_SHARED) $(LIBS3_STATIC)
@@ -250,8 +250,9 @@ LIBS3_SOURCES := bucket.c bucket_metadata.c error_parser.c general.c \
 $(LIBS3_SHARED): $(LIBS3_SOURCES:%.c=$(BUILD)/obj/%.do)
 	$(QUIET_ECHO) $@: Building shared library
 	@ mkdir -p $(dir $@)
-	$(VERBOSE_SHOW) $(CC) -shared -Wl,-soname,libs3.so.$(LIBS3_VER_MAJOR) \
+	$(VERBOSE_SHOW) $(CC) -shared -Wl,-soname,libs3-ubbd.so.$(LIBS3_VER_MAJOR) \
         -o $@ $^ $(LDFLAGS)
+	@ln -sf libs3-ubbd.so.$(LIBS3_VER_MAJOR)  $(BUILD)/lib/libs3-ubbd.so
 
 $(LIBS3_STATIC): $(LIBS3_SOURCES:%.c=$(BUILD)/obj/%.o)
 	$(QUIET_ECHO) $@: Building static library
@@ -345,7 +346,7 @@ $(DEBPKG): exported $(BUILD)/deb/DEBIAN/control $(BUILD)/deb/DEBIAN/shlibs \
            $(BUILD)/deb/usr/share/doc/libs3/copyright
 	DESTDIR=$(BUILD)/deb/usr $(MAKE) install
 	rm -rf $(BUILD)/deb/usr/include
-	rm -f $(BUILD)/deb/usr/lib/libs3.a
+	rm -f $(BUILD)/deb/usr/lib/libs3-ubbd.a
 	@mkdir -p $(dir $@)
 	fakeroot dpkg-deb -b $(BUILD)/deb $@
 	mv $@ $(BUILD)/pkg/libs3_$(LIBS3_VER)_$(DEBARCH).deb
@@ -358,7 +359,7 @@ $(DEBDEVPKG): exported $(BUILD)/deb-dev/DEBIAN/control \
            $(BUILD)/deb-dev/usr/share/doc/libs3-dev/copyright
 	DESTDIR=$(BUILD)/deb-dev/usr $(MAKE) install
 	rm -rf $(BUILD)/deb-dev/usr/bin
-	rm -f $(BUILD)/deb-dev/usr/lib/libs3.so*
+	rm -f $(BUILD)/deb-dev/usr/lib/libs3-ubbd.so*
 	@mkdir -p $(dir $@)
 	fakeroot dpkg-deb -b $(BUILD)/deb-dev $@
 	mv $@ $(BUILD)/pkg/libs3-dev_$(LIBS3_VER)_$(DEBARCH).deb
@@ -366,7 +367,7 @@ $(DEBDEVPKG): exported $(BUILD)/deb-dev/DEBIAN/control \
 $(BUILD)/deb/DEBIAN/control: debian/control
 	@mkdir -p $(dir $@)
 	echo -n "Depends: " > $@
-	dpkg-shlibdeps -Sbuild -O $(BUILD)/lib/libs3.so.$(LIBS3_VER_MAJOR) | \
+	dpkg-shlibdeps -Sbuild -O $(BUILD)/lib/libs3-ubbd.so.$(LIBS3_VER_MAJOR) | \
             cut -d '=' -f 2- >> $@
 	sed -e 's/LIBS3_VERSION/$(LIBS3_VER)/' \
             < $< | sed -e 's/DEBIAN_ARCHITECTURE/$(DEBARCH)/' | \
