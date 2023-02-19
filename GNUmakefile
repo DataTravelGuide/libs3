@@ -142,6 +142,7 @@ ifndef CFLAGS
     endif
 endif
 
+CFLAGS := -g
 CFLAGS += -Wall -Wshadow -Wextra -Iinc \
           $(CURL_CFLAGS) $(LIBXML2_CFLAGS) \
           -DLIBS3_VER_MAJOR=\"$(LIBS3_VER_MAJOR)\" \
